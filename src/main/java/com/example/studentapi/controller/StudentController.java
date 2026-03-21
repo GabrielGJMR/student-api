@@ -4,7 +4,6 @@ import com.example.studentapi.model.Student;
 import com.example.studentapi.service.StudentService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,27 +23,22 @@ public class StudentController {
     // GET /api/students - Obtener todos los estudiantes
     @GetMapping
     public ResponseEntity<List<Student>> getAllStudents() {
-        List<Student> students = studentService.getAllStudents();
-        return new ResponseEntity<>(students, HttpStatus.OK);
+        return ResponseEntity.ok(studentService.getAllStudents());
     }
 
     // GET /api/students/{id} - Obtener estudiante por ID
     @GetMapping("/{id}")
     public ResponseEntity<Student> getStudentById(@PathVariable Long id) {
         return studentService.getStudentById(id)
-                .map(student -> new ResponseEntity<>(student, HttpStatus.OK))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     // POST /api/students - Crear nuevo estudiante
     @PostMapping
     public ResponseEntity<Student> createStudent(@RequestBody Student student) {
-        try {
-            Student createdStudent = studentService.createStudent(student);
-            return new ResponseEntity<>(createdStudent, HttpStatus.CREATED);
-        } catch (IllegalStateException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        Student createdStudent = studentService.createStudent(student);
+        return ResponseEntity.status(201).body(createdStudent);
     }
 
     // PUT /api/students/{id} - Actualizar estudiante
@@ -54,12 +48,10 @@ public class StudentController {
             @RequestBody Student studentDetails) {
 
         try {
-            Student updatedStudent =
-                    studentService.updateStudent(id, studentDetails);
-
-            return new ResponseEntity<>(updatedStudent, HttpStatus.OK);
+            Student updatedStudent = studentService.updateStudent(id, studentDetails);
+            return ResponseEntity.ok(updatedStudent);
         } catch (IllegalStateException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -68,9 +60,9 @@ public class StudentController {
     public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
         try {
             studentService.deleteStudent(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return ResponseEntity.noContent().build();
         } catch (IllegalStateException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.notFound().build();
         }
     }
 }
